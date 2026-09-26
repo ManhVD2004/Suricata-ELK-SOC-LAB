@@ -44,7 +44,7 @@ The detection pipeline mirrors an enterprise SecOps environment where an intrusi
 | Node / Role | Operating System | IP Address | Active Services & Ports |
 | :--- | :--- | :--- | :--- |
 | **Monitoring & Web Target** | Ubuntu Server 26.04.1 LTS | `208.100.26.166` | Suricata IDS (`ens33`), Elasticsearch (`9200`), Kibana (`5601`), Apache/DVWA (`4280`), MariaDB (`3306`), SSH (`22`) |
-| **Adversary / Attacker** | Kali Linux 2026.x | `208.100.26.148` | cURL automation, Hydra brute-force engine |
+| **Adversary / Attacker** | Kali Linux 2026.x | `208.100.26.148` | cURL automation, Brute-force attack |
 | **Analyst Workstation** | Windows 11 Enterprise | `208.100.26.1` | Chrome/Edge Browser (Kibana UI & DVWA verification) |
 
 ---
