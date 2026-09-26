@@ -26,75 +26,8 @@ A production-grade Network Security Monitoring (NSM) and Security Operations Cen
 
 The detection pipeline mirrors an enterprise SecOps environment where an intrusion detection system operates out-of-band to inspect ingress/egress network flows, shipping structured security telemetry into an analytical data lake without introducing latency into web application operations.
 
-```text
-========================================================================================
-                                LAB ARCHITECTURE & DATA FLOW
-========================================================================================
-
-  [ Attacker Machine ]                     [ User / Management Workstation ]
-      Kali Linux                                    Windows Host
-    208.100.26.148                                  208.100.26.1
-          |                                               |
-          +-----------------------+-----------------------+
-                                  |
-                                  | (HTTP :4280 / SSH :22)
-                                  v
-+--------------------------------------------------------------------------------------+
-|                     MONITORING & TARGET SERVER (Ubuntu Server 26.04)                 |
-|                                    IP: 208.100.26.166                                |
-|                                                                                      |
-|   +------------------------------------------------------------------------------+   |
-|   |                  Physical / Promiscuous Network Interface                    |   |
-|   |                                   ens33                                      |   |
-|   +---------------------------------------+--------------------------------------+   |
-|                                           |                                          |
-|                     +---------------------+---------------------+                    |
-|                     | (Kernel AF_PACKET)                        | (TCP Socket)       |
-|                     v                                           v                    |
-|    +------------------------------------+      +---------------------------------+   |
-|    |        SURICATA IDS ENGINE         |      |       TARGET WEB SERVICE        |   |
-|    |              (v8.0.7)              |      |             Apache2             |   |
-|    |  - Multi-threaded packet sniffing  |      |           (Port 4280)           |   |
-|    |  - LibHTP deep HTTP normalization  |      |                |                |   |
-|    |  - Custom rules: local.rules       |      |                v                |   |
-|    +------------------+-----------------+      |       DVWA PHP Application      |   |
-|                       |                        |       (MariaDB / Port 3306)     |   |
-|       Generates Alert |                        +---------------------------------+   |
-|       Telemetry       v                                                              |
-|        /var/log/suricata/eve.json                                                    |
-|                       |                                                              |
-|                       v                                                              |
-|    +------------------------------------+                                            |
-|    |           FILEBEAT AGENT           |                                            |
-|    |              (v8.19.22)            |                                            |
-|    |  - Harvester tailing eve.json      |                                            |
-|    |  - Module: suricata (ECS parser)   |                                            |
-|    +------------------+-----------------+                                            |
-|                       |                                                              |
-|                       | JSON Payloads over HTTP (REST API :9200)                     |
-|                       v                                                              |
-|    +------------------------------------+                                            |
-|    |       ELASTICSEARCH CLUSTER        |                                            |
-|    |              (v8.19.22)            |                                            |
-|    |  - Single-node architecture        |                                            |
-|    |  - Heap capped to 512MB RAM        |                                            |
-|    |  - Inverted indices & ILM streams  |                                            |
-|    +------------------+-----------------+                                            |
-|                       |                                                              |
-|                       | Read Queries / KQL Filtering                                 |
-|                       v                                                              |
-|    +------------------------------------+                                            |
-|    |          KIBANA DASHBOARD          |                                            |
-|    |              (v8.19.22)            |                                            |
-|    |  - Discover analytical console     |                                            |
-|    |  - Real-time SOC visualizations    |                                            |
-|    +------------------------------------+                                            |
-|                       ^                                                              |
-+-----------------------|--------------------------------------------------------------+
-                        | Access via Browser (Port 5601)
-                        |
-            [ SOC Analyst / Engineer ]
-```
+![Lab Architecture and Data Flow](images/00_architecture.png)  
+*Figure 0: High-level architectural topology and real-time security data processing pipeline.*
 
 ### Detailed Packet Journey:
 1. **Network Ingestion (AF_PACKET ring buffer):** Ingress Ethernet frames arriving on interface `ens33` are memory-mapped into user-space by Suricata via Linux kernel high-speed packet sockets (`AF_PACKET`) without dropping packets.
@@ -340,7 +273,8 @@ During lab implementation, four critical technical roadblocks were encountered a
 ```text
 .
 ├── README.md                           # Comprehensive Technical Documentation
-├── images/                             # Photographic Evidence (Figures 1-19)
+├── images/                             # Photographic Evidence (Figures 0-19)
+│   ├── 00_architecture.png
 │   ├── 01_suricata_build.png
 │   ├── 02_suricata_yaml_interface.png
 │   ├── 03_suricata_yaml_eve.png
